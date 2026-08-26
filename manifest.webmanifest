@@ -1,0 +1,12 @@
+{
+  "name": "日程 · 每日任务",
+  "short_name": "日程",
+  "description": "每天都清楚，完成有回响。",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#a90039",
+  "lang": "zh-CN",
+  "icons": [{"src":"icons/app-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
+

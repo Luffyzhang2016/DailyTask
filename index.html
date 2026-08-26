@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#a90039">
+  <meta name="description" content="每天都清楚，完成有回响。">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/app-icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/app-icon.svg">
+  <link rel="stylesheet" href="styles.css">
+  <title>日程 · 每日任务</title>
+</head>
+<body>
+  <a class="skip-link" href="#task-list">跳到任务列表</a>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="日程首页">
+        <span class="brand-mark" aria-hidden="true">⌣</span><span>日程</span>
+      </a>
+      <div class="top-actions">
+        <div class="theme-switcher" aria-label="选择主题" role="group">
+          <button data-theme-choice="morning" aria-label="晨光主题" aria-pressed="true"><span aria-hidden="true">☼</span><span>晨光</span></button>
+          <button data-theme-choice="focus" aria-label="专注主题" aria-pressed="false"><span aria-hidden="true">◎</span><span>专注</span></button>
+          <button data-theme-choice="night" aria-label="夜航主题" aria-pressed="false"><span aria-hidden="true">☾</span><span>夜航</span></button>
+        </div>
+        <button class="icon-button account-button" id="account-button" aria-label="账户与同步"><span aria-hidden="true">我</span></button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="calendar-panel" id="calendar-view" aria-labelledby="calendar-heading">
+        <div class="panel-heading">
+          <h1 id="calendar-heading"></h1>
+          <div class="month-controls">
+            <button class="icon-button" id="prev-month" aria-label="上个月">‹</button>
+            <button class="text-button" id="today-button">今天</button>
+            <button class="icon-button" id="next-month" aria-label="下个月">›</button>
+          </div>
+        </div>
+        <div class="weekday-row" aria-hidden="true"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+        <div class="calendar-grid" id="calendar-grid" role="grid" aria-label="月历"></div>
+        <div class="calendar-legend"><span><i class="smile-mini" aria-hidden="true">⌣</i> 全部完成</span><span><i class="dot-mini" aria-hidden="true"></i> 有任务</span></div>
+      </section>
+
+      <section class="tasks-panel" id="today-view" aria-labelledby="selected-date-heading">
+        <div class="day-header">
+          <div>
+            <p class="date-context" id="date-context"></p>
+            <h1 id="selected-date-heading"></h1>
+          </div>
+          <button class="icon-button" id="add-task-top" aria-label="添加任务">＋</button>
+        </div>
+        <div class="progress-block" aria-live="polite">
+          <div class="progress-copy"><strong id="progress-count">0 / 0</strong><span>已完成</span><span class="complete-message" id="complete-message" hidden>今天做得很好 <i aria-hidden="true">⌣</i></span></div>
+          <div class="progress-track" role="progressbar" aria-label="今日任务进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="progress-bar"></span></div>
+        </div>
+
+        <div id="task-list" tabindex="-1">
+          <section class="task-group" aria-labelledby="repeat-heading">
+            <div class="group-heading"><h2 id="repeat-heading">每日重复</h2><span id="repeat-count"></span></div>
+            <div class="task-rows" id="repeat-list"></div>
+          </section>
+          <section class="task-group" aria-labelledby="specific-heading">
+            <div class="group-heading"><h2 id="specific-heading">当日任务</h2><span id="specific-count"></span></div>
+            <div class="task-rows" id="specific-list"></div>
+          </section>
+        </div>
+        <div class="empty-state" id="empty-state" hidden>
+          <span class="empty-mark" aria-hidden="true">＋</span>
+          <h2>这一天还没有任务</h2>
+          <p>添加一项任务，为今天留一个清楚的落点。</p>
+          <button class="primary-button" id="empty-add">添加任务</button>
+        </div>
+        <button class="add-task-button" id="add-task-bottom"><span aria-hidden="true">＋</span> 添加任务</button>
+      </section>
+    </main>
+
+    <nav class="mobile-nav" aria-label="主导航">
+      <button data-mobile-view="today" aria-current="page"><span aria-hidden="true">✓</span><span>今天</span></button>
+      <button data-mobile-view="calendar"><span aria-hidden="true">▦</span><span>日历</span></button>
+    </nav>
+  </div>
+
+  <dialog id="task-dialog" class="sheet-dialog" aria-labelledby="task-dialog-title">
+    <form method="dialog" id="task-form">
+      <div class="dialog-heading"><div><p class="date-context">任务设置</p><h2 id="task-dialog-title">添加任务</h2></div><button class="icon-button" value="cancel" aria-label="关闭">×</button></div>
+      <input type="hidden" id="task-id">
+      <label>任务名称<input id="task-title" name="title" required maxlength="80" autocomplete="off" placeholder="例如：整理明日计划"></label>
+      <fieldset><legend>任务类型</legend><div class="segmented"><label><input type="radio" name="task-type" value="repeat" checked><span>每日重复</span></label><label><input type="radio" name="task-type" value="specific"><span>指定日期</span></label></div></fieldset>
+      <label id="date-field">执行日期<input id="task-date" name="date" type="date"></label>
+      <label>完成截止时间 <span class="optional">可选</span><input id="task-deadline" name="deadline" type="time"></label>
+      <p class="form-error" id="task-error" role="alert" hidden></p>
+      <div class="dialog-actions"><button class="danger-button" type="button" id="delete-task" hidden>删除任务</button><span></span><button class="secondary-button" value="cancel">取消</button><button class="primary-button" type="submit">保存任务</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="account-dialog" class="sheet-dialog" aria-labelledby="account-title">
+    <form method="dialog" id="login-form">
+      <div class="dialog-heading"><div><p class="date-context">云端同步</p><h2 id="account-title">邮箱登录</h2></div><button class="icon-button" value="cancel" aria-label="关闭">×</button></div>
+      <p class="dialog-intro">登录后可在不同设备同步任务。当前演示版会把数据安全地保存在此浏览器。</p>
+      <label>邮箱地址<input id="email" name="email" type="email" autocomplete="email" required placeholder="name@example.com"></label>
+      <div class="code-row"><label>验证码<input id="code" name="code" inputmode="numeric" maxlength="6" placeholder="6 位验证码"></label><button class="secondary-button" type="button" id="send-code">发送验证码</button></div>
+      <p class="sync-note" id="sync-note" role="status">正式部署时，此处连接阿里云函数计算 API，不会在网页中保存 OSS 密钥。</p>
+      <div class="dialog-actions"><span></span><button class="secondary-button" value="cancel">暂不登录</button><button class="primary-button" type="submit">登录并同步</button></div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js" defer></script>
+</body>
+</html>
