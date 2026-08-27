@@ -1,5 +1,8 @@
 const crypto = require("crypto");
+const dns = require("dns");
 const OSS = require("ali-oss");
+
+dns.setDefaultResultOrder("ipv4first");
 
 const required = ["OSS_REGION", "OSS_BUCKET", "SESSION_SECRET", "GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET", "API_PUBLIC_URL", "FRONTEND_URL", "ALLOWED_ORIGIN"];
 
@@ -65,14 +68,14 @@ function githubStart() {
 async function githubExchange(request) {
   const state = verifySignedValue(request.body.state);
   if (!state || state.provider !== "github" || !request.body.code) return authFailure("invalid_request");
-  const tokenResponse = await fetch("https://github.com/login/oauth/access_token", {
+  const tokenResponse = await fetchWithRetry("https://github.com/login/oauth/access_token", {
     method: "POST",
     headers: { Accept: "application/json", "Content-Type": "application/json" },
     body: JSON.stringify({ client_id: process.env.GITHUB_CLIENT_ID, client_secret: process.env.GITHUB_CLIENT_SECRET, code: request.body.code, redirect_uri: frontendCallbackUrl() }),
   });
   const tokenData = await tokenResponse.json();
   if (!tokenData.access_token) return authFailure("github_denied");
-  const userResponse = await fetch("https://api.github.com/user", { headers: { Authorization: `Bearer ${tokenData.access_token}`, Accept: "application/vnd.github+json", "User-Agent": "DailyTask" } });
+  const userResponse = await fetchWithRetry("https://api.github.com/user", { headers: { Authorization: `Bearer ${tokenData.access_token}`, Accept: "application/vnd.github+json", "User-Agent": "DailyTask" } });
   const githubUser = await userResponse.json();
   if (!githubUser.id) return authFailure("user_lookup_failed");
   const user = { provider: "github", providerId: String(githubUser.id), login: githubUser.login, avatar: githubUser.avatar_url };
@@ -96,7 +99,7 @@ function googleStart() {
 async function googleExchange(request) {
   const state = verifySignedValue(request.body.state);
   if (!state || state.provider !== "google" || !request.body.code) return authFailure("invalid_request");
-  const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+  const tokenResponse = await fetchWithRetry("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
@@ -109,7 +112,7 @@ async function googleExchange(request) {
   });
   const tokenData = await tokenResponse.json();
   if (!tokenData.access_token) return authFailure("google_denied");
-  const userResponse = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
+  const userResponse = await fetchWithRetry("https://openidconnect.googleapis.com/v1/userinfo", {
     headers: { Authorization: `Bearer ${tokenData.access_token}` },
   });
   const googleUser = await userResponse.json();
@@ -197,3 +200,17 @@ async function writeJson(oss, key, data) { await oss.put(key, Buffer.from(JSON.s
 function digest(value) { return crypto.createHash("sha256").update(value).digest("hex"); }
 function hmac(value, secret) { return crypto.createHmac("sha256", secret).update(value).digest("base64url"); }
 function safeEqual(a, b) { const left = Buffer.from(String(a)); const right = Buffer.from(String(b)); return left.length === right.length && crypto.timingSafeEqual(left, right); }
+
+async function fetchWithRetry(url, options = {}, attempts = 3) {
+  let lastError;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      return await fetch(url, { ...options, signal: AbortSignal.timeout(10000) });
+    } catch (error) {
+      lastError = error;
+      console.warn(`External request attempt ${attempt}/${attempts} failed: ${new URL(url).hostname}`, error.cause?.code || error.name);
+      if (attempt < attempts) await new Promise((resolve) => setTimeout(resolve, attempt * 400));
+    }
+  }
+  throw lastError;
+}
