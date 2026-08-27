@@ -111,13 +111,14 @@
         <div class="dialog-actions compact-actions"><span></span><button class="secondary-button" type="button" id="cancel-account-login">暂不登录</button></div>
       </section>
       <section id="profile-view" hidden>
-        <div class="profile-summary"><img id="profile-avatar" alt="" hidden><span id="profile-avatar-fallback" aria-hidden="true">我</span><div><strong id="profile-display-name"></strong><p id="profile-provider"></p></div></div>
+        <div class="profile-summary"><button class="profile-avatar-button" id="profile-avatar-button" type="button" aria-label="更换头像" aria-expanded="false"><img id="profile-avatar" alt="" hidden><span id="profile-avatar-fallback" aria-hidden="true">我</span><span class="avatar-edit-mark" aria-hidden="true">✎</span></button><div><strong id="profile-display-name"></strong><p id="profile-provider"></p><button class="avatar-text-button" id="change-avatar-button" type="button">更换头像</button></div></div>
         <label>昵称<input id="profile-nickname" maxlength="40" autocomplete="nickname"></label>
         <fieldset><legend>性别 <span class="optional">可选</span></legend><div class="segmented"><label><input type="radio" name="profile-gender" value="female"><span>女</span></label><label><input type="radio" name="profile-gender" value="male"><span>男</span></label></div></fieldset>
         <label>账户<input id="profile-account" readonly></label>
-        <fieldset class="avatar-field"><legend>选择头像</legend><div class="avatar-grid" id="avatar-grid" aria-label="内置卡通头像"></div><div class="upload-row"><label class="secondary-button upload-button" for="avatar-upload">使用本地图片</label><input id="avatar-upload" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" hidden><span id="avatar-size-note">图片会自动压缩后保存</span></div></fieldset>
+        <fieldset class="avatar-field" id="avatar-field" hidden><legend>选择头像</legend><div class="avatar-grid" id="avatar-grid" aria-label="内置卡通头像"></div><div class="upload-row"><label class="secondary-button upload-button" for="avatar-upload">使用本地图片</label><input id="avatar-upload" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" hidden><span id="avatar-size-note">图片会自动压缩后保存</span></div></fieldset>
         <p class="sync-note">个人资料和任务会同步到你的私有 OSS 空间。</p>
-        <div class="dialog-actions profile-actions"><button class="danger-button" type="button" id="logout-button">退出登录</button><span></span><button class="secondary-button" type="button" id="cancel-profile">取消</button><button class="primary-button" type="submit">保存资料</button></div>
+        <div class="dialog-actions profile-actions"><span></span><button class="secondary-button" type="button" id="cancel-profile">取消</button><button class="primary-button" type="submit">保存资料</button></div>
+        <button class="logout-button" type="button" id="logout-button">退出登录</button>
       </section>
     </form>
   </dialog>
