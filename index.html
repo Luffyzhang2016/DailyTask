@@ -20,9 +20,9 @@
       </a>
       <div class="top-actions">
         <div class="theme-switcher" aria-label="选择主题" role="group">
-          <button data-theme-choice="morning" aria-label="晨光主题" aria-pressed="true"><span aria-hidden="true">☼</span><span>晨光</span></button>
-          <button data-theme-choice="focus" aria-label="专注主题" aria-pressed="false"><span aria-hidden="true">◎</span><span>专注</span></button>
-          <button data-theme-choice="night" aria-label="夜航主题" aria-pressed="false"><span aria-hidden="true">☾</span><span>夜航</span></button>
+          <button data-theme-choice="morning" aria-label="晨光主题" aria-pressed="true"><span class="theme-icon" aria-hidden="true">☼</span><span>晨光</span></button>
+          <button data-theme-choice="focus" aria-label="专注主题" aria-pressed="false"><span class="theme-icon" aria-hidden="true">◎</span><span>专注</span></button>
+          <button data-theme-choice="night" aria-label="夜航主题" aria-pressed="false"><span class="theme-icon" aria-hidden="true">☾</span><span>夜航</span></button>
         </div>
         <button class="icon-button account-button" id="account-button" aria-label="账户与同步"><span aria-hidden="true">我</span></button>
       </div>
@@ -55,14 +55,15 @@
           <div class="progress-copy"><strong id="progress-count">0 / 0</strong><span>已完成</span><span class="complete-message" id="complete-message" hidden>今天做得很好 <i aria-hidden="true">⌣</i></span></div>
           <div class="progress-track" role="progressbar" aria-label="今日任务进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="progress-bar"></span></div>
         </div>
+        <p class="date-policy" id="date-policy" hidden></p>
 
         <div id="task-list" tabindex="-1">
           <section class="task-group" aria-labelledby="repeat-heading">
-            <div class="group-heading"><h2 id="repeat-heading">每日重复</h2><span id="repeat-count"></span></div>
+            <div class="group-heading"><h2 id="repeat-heading">重复任务</h2><span id="repeat-count"></span></div>
             <div class="task-rows" id="repeat-list"></div>
           </section>
           <section class="task-group" aria-labelledby="specific-heading">
-            <div class="group-heading"><h2 id="specific-heading">当日任务</h2><span id="specific-count"></span></div>
+            <div class="group-heading"><h2 id="specific-heading">指定日期任务</h2><span id="specific-count"></span></div>
             <div class="task-rows" id="specific-list"></div>
           </section>
         </div>
@@ -84,27 +85,39 @@
 
   <dialog id="task-dialog" class="sheet-dialog" aria-labelledby="task-dialog-title">
     <form method="dialog" id="task-form">
-      <div class="dialog-heading"><div><p class="date-context">任务设置</p><h2 id="task-dialog-title">添加任务</h2></div><button class="icon-button" value="cancel" aria-label="关闭">×</button></div>
+      <div class="dialog-heading"><div><p class="date-context">任务设置</p><h2 id="task-dialog-title">添加任务</h2></div><button class="icon-button" type="button" id="close-task-dialog" aria-label="关闭">×</button></div>
       <input type="hidden" id="task-id">
       <label>任务名称<input id="task-title" name="title" required maxlength="80" autocomplete="off" placeholder="例如：整理明日计划"></label>
-      <fieldset><legend>任务类型</legend><div class="segmented"><label><input type="radio" name="task-type" value="repeat" checked><span>每日重复</span></label><label><input type="radio" name="task-type" value="specific"><span>指定日期</span></label></div></fieldset>
-      <label id="date-field">执行日期<input id="task-date" name="date" type="date"></label>
-      <label>完成截止时间 <span class="optional">可选</span><input id="task-deadline" name="deadline" type="time"></label>
+      <fieldset><legend>任务类型</legend><div class="segmented"><label><input type="radio" name="task-type" value="repeat" checked><span>重复任务</span></label><label><input type="radio" name="task-type" value="specific"><span>指定日期任务</span></label></div></fieldset>
+      <fieldset id="repeat-rule-field"><legend>重复方式</legend><div class="segmented"><label><input type="radio" name="repeat-mode" value="daily" checked><span>每日重复</span></label><label><input type="radio" name="repeat-mode" value="interval"><span>区间重复</span></label></div></fieldset>
+      <div class="date-range" id="repeat-range" hidden><label>开始日期<input id="repeat-start" type="date"></label><label>结束日期<input id="repeat-end" type="date"></label></div>
+      <label id="date-field" hidden>执行日期<input id="task-date" name="date" type="date"></label>
+      <label>完成截止时间 <span class="optional">可选</span><input id="task-deadline" name="deadline" type="time" step="300" inputmode="numeric"></label>
       <p class="form-error" id="task-error" role="alert" hidden></p>
-      <div class="dialog-actions"><button class="danger-button" type="button" id="delete-task" hidden>删除任务</button><span></span><button class="secondary-button" value="cancel">取消</button><button class="primary-button" type="submit">保存任务</button></div>
+      <div class="dialog-actions"><button class="danger-button" type="button" id="delete-task" hidden>删除任务</button><span></span><button class="secondary-button" type="button" id="cancel-task-dialog">取消</button><button class="primary-button" type="submit">保存任务</button></div>
     </form>
   </dialog>
 
   <dialog id="account-dialog" class="sheet-dialog" aria-labelledby="account-title">
-    <form method="dialog">
-      <div class="dialog-heading"><div><p class="date-context">云端同步</p><h2 id="account-title">登录日程</h2></div><button class="icon-button" value="cancel" aria-label="关闭">×</button></div>
-      <p class="dialog-intro">选择 GitHub 或 Google 验证身份，登录后即可在不同设备同步任务。</p>
-      <div class="oauth-options" aria-label="登录方式">
+    <form method="dialog" id="account-form">
+      <div class="dialog-heading"><div><p class="date-context">账户与同步</p><h2 id="account-title">登录日程</h2></div><button class="icon-button" type="button" id="close-account-dialog" aria-label="关闭">×</button></div>
+      <section id="login-view">
+        <p class="dialog-intro">选择 GitHub 或 Google 验证身份，登录后即可在不同设备同步任务。</p>
+        <div class="oauth-options" aria-label="登录方式">
         <button class="oauth-button github-button" type="button" id="github-login"><span aria-hidden="true">GH</span> 使用 GitHub 登录</button>
         <button class="oauth-button google-button" type="button" id="google-login"><span aria-hidden="true">G</span> 使用 Google 登录</button>
-      </div>
-      <p class="sync-note" id="sync-note" role="status">登录服务仅用于确认账户身份，任务数据仍保存在你的私有阿里云 OSS 中。</p>
-      <div class="dialog-actions"><span></span><button class="secondary-button" value="cancel">暂不登录</button></div>
+        </div>
+        <p class="sync-note" id="sync-note" role="status">登录服务仅用于确认账户身份，任务数据仍保存在你的私有阿里云 OSS 中。</p>
+        <div class="dialog-actions compact-actions"><span></span><button class="secondary-button" type="button" id="cancel-account-login">暂不登录</button></div>
+      </section>
+      <section id="profile-view" hidden>
+        <div class="profile-summary"><img id="profile-avatar" alt="" hidden><span id="profile-avatar-fallback" aria-hidden="true">我</span><div><strong id="profile-display-name"></strong><p id="profile-provider"></p></div></div>
+        <label>昵称<input id="profile-nickname" maxlength="40" autocomplete="nickname"></label>
+        <label>性别 <span class="optional">可选</span><select id="profile-gender"><option value="unspecified">不填写</option><option value="female">女</option><option value="male">男</option><option value="other">其他</option></select></label>
+        <label>账户<input id="profile-account" readonly></label>
+        <p class="sync-note">个人资料和任务会同步到你的私有 OSS 空间。</p>
+        <div class="dialog-actions profile-actions"><button class="danger-button" type="button" id="logout-button">退出登录</button><span></span><button class="secondary-button" type="button" id="cancel-profile">取消</button><button class="primary-button" type="submit">保存资料</button></div>
+      </section>
     </form>
   </dialog>
 
