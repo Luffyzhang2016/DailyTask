@@ -23,3 +23,4 @@
 .task-meta{font-size:.875rem}
 .task-title{line-height:1.4;max-width:50ch}
 .day-status.dot,.calendar-legend span:last-child{display:none}
+.oauth-options{display:grid;gap:var(--s3);margin-bottom:var(--s4)}.oauth-button{width:100%;min-height:3.25rem;border-radius:var(--r2);font-weight:700}.oauth-button span{display:inline-grid;place-items:center;width:1.75rem;height:1.75rem;margin-right:var(--s2);border-radius:50%;font-size:.75rem;font-weight:800}.github-button{border:1px solid var(--ink);background:var(--ink);color:var(--bg)}.github-button span{background:var(--bg);color:var(--ink)}.google-button{border:1px solid var(--line);background:var(--surface-raised);color:var(--ink)}.google-button span{border:1px solid var(--line);color:#4285f4}.oauth-button:hover{transform:translateY(-1px);box-shadow:0 .35rem 1rem color-mix(in srgb,var(--ink) 10%,transparent)}

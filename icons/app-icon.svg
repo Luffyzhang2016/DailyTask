@@ -1,7 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="104" fill="#a90039"/>
-  <circle cx="256" cy="256" r="150" fill="none" stroke="#fff" stroke-width="28"/>
-  <circle cx="205" cy="226" r="15" fill="#fff"/><circle cx="307" cy="226" r="15" fill="#fff"/>
-  <path d="M177 292c22 42 55 63 79 63s57-21 79-63" fill="none" stroke="#fff" stroke-width="28" stroke-linecap="round"/>
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- Generator: Adobe Illustrator 30.5.1, SVG Export Plug-In . SVG Version: 9.03 Build 0)  -->
+<svg version="1.1" id="&#x56FE;&#x5C42;_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px"
+	 y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve">
+<path style="fill:#A90039;" d="M104,0h304c57.438,0,104,46.562,104,104v304c0,57.438-46.562,104-104,104H104
+	C46.562,512,0,465.438,0,408V104C0,46.562,46.562,0,104,0z"/>
+<circle style="fill:none;stroke:#FFFFFF;stroke-width:28;" cx="258.016" cy="247.238" r="150"/>
+<circle style="fill:#FFFFFF;" cx="207.016" cy="195.651" r="19.843"/>
+<circle style="fill:#FFFFFF;" cx="309.016" cy="195.651" r="19.843"/>
+<path style="fill:none;stroke:#FFFFFF;stroke-width:28;stroke-linecap:round;" d="M171.492,278.144
+	c9.405,39.065,44.572,68.094,86.524,68.094s77.119-29.029,86.524-68.094"/>
 </svg>
-

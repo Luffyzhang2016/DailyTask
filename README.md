@@ -1,6 +1,6 @@
 # 日程 · 每日任务
 
-移动优先的静态 PWA，每日任务数据默认存储在浏览器 `localStorage`。项目可直接托管到 GitHub Pages。
+移动优先的 PWA。未登录时任务保存在浏览器 `localStorage`；配置阿里云函数计算后，可通过 GitHub 或 Google 登录，并将不同用户的数据隔离保存到私有 OSS Bucket。
 
 ## 本地预览
 
@@ -12,7 +12,6 @@ npx serve .
 
 ## 云端架构
 
-生产环境建议：GitHub Pages（静态前端）→ 阿里云 API 网关/函数计算（邮箱验证码、鉴权、数据校验）→ OSS（按用户分区保存 JSON）或表格存储。不要把 OSS AccessKey 写入前端。
+生产结构：GitHub Pages（静态前端）→ GitHub / Google OAuth → 阿里云函数计算 HTTP 触发器（鉴权、数据校验）→ 私有 OSS（按用户分区保存 JSON）。不要把 OSS AccessKey 或 OAuth Client Secret 写入前端。
 
-在 `app.js` 中用正式 API 客户端替换 `cloudAdapter` 即可接入。建议服务端使用 HttpOnly 会话 Cookie，并限制 CORS 为 GitHub Pages 域名。
-
+后端代码及部署说明位于 `backend/`。部署成功后，把函数 HTTPS 地址填写到 `config.js` 的 `API_BASE`，再提交并推送即可启用云同步。后端使用短数据令牌作为 Bearer 凭证，并将 CORS 限制为 GitHub Pages 来源。

@@ -1,4 +1,6 @@
 const STORAGE_KEY='daymark-state-v1';
+const AUTH_KEY='daymark-auth-v1';
+const API_BASE=(window.DAYMARK_CONFIG?.API_BASE||'').replace(/\/$/,'');
 const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random().toString(16).slice(2)}`;
 const iso=date=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
 const parseDate=value=>{const [y,m,d]=value.split('-').map(Number);return new Date(y,m-1,d)};
@@ -13,9 +15,10 @@ const seedTasks=()=>[
 const defaultState=()=>({theme:'morning',selectedDate:todayIso(),month:`${todayIso().slice(0,7)}-01`,tasks:seedTasks(),completions:{}});
 let state=loadState();
 let toastTimer;
+let syncTimer;
 
 function loadState(){try{return {...defaultState(),...JSON.parse(localStorage.getItem(STORAGE_KEY)||'null')}}catch{return defaultState()}}
-function saveState(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}
+function saveState(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));scheduleCloudSave()}
 const tasksFor=date=>state.tasks.filter(task=>task.type==='repeat'||task.date===date);
 const done=(taskId,date)=>Boolean(state.completions[date]?.includes(taskId));
 function setDone(taskId,date,value){const set=new Set(state.completions[date]||[]);value?set.add(taskId):set.delete(taskId);state.completions[date]=[...set];saveState()}
@@ -58,11 +61,18 @@ document.querySelectorAll('[data-mobile-view]').forEach(button=>button.addEventL
 function showMobileView(view){if(matchMedia('(min-width: 50rem)').matches)return;document.querySelector('#today-view').style.display=view==='today'?'block':'none';document.querySelector('#calendar-view').style.display=view==='calendar'?'block':'none';document.querySelectorAll('[data-mobile-view]').forEach(button=>button.toggleAttribute('aria-current',button.dataset.mobileView===view));window.scrollTo({top:0,behavior:'smooth'})}
 
 const accountDialog=document.querySelector('#account-dialog');document.querySelector('#account-button').addEventListener('click',()=>accountDialog.showModal());
-document.querySelector('#send-code').addEventListener('click',()=>{const email=document.querySelector('#email');if(!email.checkValidity()){email.reportValidity();return}document.querySelector('#sync-note').textContent='演示验证码已发送：请输入 123456。正式版将由服务端发送邮件。';showToast('验证码已发送')});
-document.querySelector('#login-form').addEventListener('submit',event=>{event.preventDefault();const code=document.querySelector('#code').value;if(code!=='123456'){document.querySelector('#sync-note').textContent='验证码不正确。演示版请输入 123456。';return}accountDialog.close();document.querySelector('#account-button span').textContent=document.querySelector('#email').value.slice(0,1).toUpperCase();showToast('已登录；当前使用本地同步演示')});
+async function startOAuth(provider){if(!API_BASE){document.querySelector('#sync-note').textContent='云端 API 尚未配置，请先完成函数计算部署。';return}try{const result=await api(`/auth/${provider}/start`);sessionStorage.setItem('daymark-oauth-provider',provider);location.assign(result.authorizationUrl)}catch(error){document.querySelector('#sync-note').textContent=error.message}}
+document.querySelector('#github-login').addEventListener('click',()=>startOAuth('github'));
+document.querySelector('#google-login').addEventListener('click',()=>startOAuth('google'));
 
 function showToast(message){const toast=document.querySelector('#toast');toast.textContent=message;toast.classList.add('visible');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('visible'),2200)}
-const cloudAdapter={async list(){return JSON.parse(localStorage.getItem(STORAGE_KEY)||'null')},async save(data){localStorage.setItem(STORAGE_KEY,JSON.stringify(data))}};
+function auth(){try{return JSON.parse(localStorage.getItem(AUTH_KEY)||'null')}catch{return null}}
+async function api(path,{method='GET',body}={}){const token=auth()?.token;const response=await fetch(`${API_BASE}${path}`,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},...(body?{body:JSON.stringify(body)}:{})});const data=await response.json().catch(()=>({}));if(!response.ok){if(response.status===401)localStorage.removeItem(AUTH_KEY);throw new Error(data.error||'云端连接失败，请稍后重试')}return data}
+const cloudAdapter={async list(){return (await api('/api/state')).state},async save(data){return api('/api/state',{method:'PUT',body:{state:data}})}};
+function scheduleCloudSave(){if(!API_BASE||!auth()?.token)return;clearTimeout(syncTimer);syncTimer=setTimeout(()=>cloudAdapter.save(state).catch(()=>showToast('已保存在本机，云端同步稍后重试')),700)}
+async function consumeOAuthCallback(){const params=new URLSearchParams(location.search);if(params.has('error')){showToast('登录未完成，请重试');history.replaceState(null,'',location.pathname);return}if(!params.has('code')||!params.has('state'))return;const provider=sessionStorage.getItem('daymark-oauth-provider');if(!['github','google'].includes(provider)){showToast('登录会话已失效，请重新登录');return}try{const result=await api(`/auth/${provider}/exchange`,{method:'POST',body:{code:params.get('code'),state:params.get('state')}});localStorage.setItem(AUTH_KEY,JSON.stringify(result));sessionStorage.removeItem('daymark-oauth-provider');showToast(`${provider==='google'?'Google':'GitHub'} 登录成功`)}catch(error){showToast(error.message)}history.replaceState(null,'',location.pathname)}
+async function hydrateFromCloud(){if(!API_BASE||!auth()?.token)return;try{const remote=await cloudAdapter.list();if(remote){state={...defaultState(),...remote};localStorage.setItem(STORAGE_KEY,JSON.stringify(state));render()}else await cloudAdapter.save(state);const account=auth()?.user;const label=account?.login||account?.email||'';if(label)document.querySelector('#account-button span').textContent=label.slice(0,1).toUpperCase()}catch(error){showToast(error.message)}}
 window.daymarkCloudAdapter=cloudAdapter;
 if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
-render();showMobileView('today');
+async function boot(){await consumeOAuthCallback();render();showMobileView('today');await hydrateFromCloud()}
+boot();
