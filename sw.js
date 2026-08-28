@@ -1,4 +1,4 @@
-const CACHE = 'daymark-v10';
+const CACHE = 'daymark-v11';
 const ASSETS = ['./','./index.html','./styles.css','./config.js','./app.js','./manifest.webmanifest','./icons/app-icon.svg',...Array.from({length:10},(_,i)=>`./icons/avatars/avatar-${String(i+1).padStart(2,'0')}.webp`)];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS))));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))));
