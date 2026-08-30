@@ -102,10 +102,16 @@
       <input type="hidden" id="task-id">
       <label>任务名称<input id="task-title" name="title" required maxlength="80" autocomplete="off" placeholder="例如：整理明日计划"></label>
       <fieldset><legend>任务类型</legend><div class="segmented"><label><input type="radio" name="task-type" value="repeat" checked><span>重复任务</span></label><label><input type="radio" name="task-type" value="specific"><span>指定日期任务</span></label></div></fieldset>
-      <fieldset id="repeat-rule-field"><legend>重复方式</legend><div class="segmented"><label><input type="radio" name="repeat-mode" value="daily" checked><span>每日重复</span></label><label><input type="radio" name="repeat-mode" value="interval"><span>区间重复</span></label></div></fieldset>
+      <fieldset id="repeat-rule-field"><legend>重复方式</legend><div class="segmented repeat-options"><label><input type="radio" name="repeat-mode" value="daily" checked><span>每日</span></label><label><input type="radio" name="repeat-mode" value="weekdays"><span>工作日</span></label><label><input type="radio" name="repeat-mode" value="weekends"><span>周末</span></label><label><input type="radio" name="repeat-mode" value="interval"><span>日期区间</span></label></div></fieldset>
       <div class="date-range" id="repeat-range" hidden><label>开始日期<input id="repeat-start" type="date"></label><label>结束日期<input id="repeat-end" type="date"></label></div>
       <label id="date-field" hidden>执行日期<input id="task-date" name="date" type="date"></label>
       <label>完成截止时间 <span class="optional">可选</span><input id="task-deadline" name="deadline" type="time" step="300" inputmode="numeric"></label>
+      <fieldset class="reminder-field" id="reminder-field" hidden>
+        <legend>到期提醒</legend>
+        <label class="reminder-option"><input id="task-reminder" type="checkbox" checked><span><strong>提醒两次</strong><small>截止前 60 分钟和 30 分钟</small></span></label>
+        <div class="notification-permission"><p id="notification-status" role="status"></p><button class="notification-button" type="button" id="enable-notifications">开启系统通知</button></div>
+        <p class="form-hint">应用打开或安装版正在运行时可准时提醒；被系统彻底关闭后暂不能保证后台提醒。</p>
+      </fieldset>
       <p class="form-error" id="task-error" role="alert" hidden></p>
       <div class="dialog-actions"><button class="danger-button" type="button" id="delete-task" hidden>删除任务</button><span></span><button class="secondary-button" type="button" id="cancel-task-dialog">取消</button><button class="primary-button" type="submit">保存任务</button></div>
     </form>
